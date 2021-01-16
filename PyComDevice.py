@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 class ComDevice(PyLog.LogClass):
     @classmethod
-    def find_devices(cls):
+    def find_devices(cls) -> list:
         dev_list = serial.tools.list_ports.comports()
         logging.info("{}\t{}".format("Port", "Description"))
         for dev in dev_list:
@@ -207,7 +207,7 @@ class ComDevice(PyLog.LogClass):
         finally:
             self._lock.release()
 
-    def is_debug_mode(self):
+    def is_debug_mode(self) -> bool:
         return self.__DEBUG_MODE
 
     def get_cur_val(self) -> (float, float):
