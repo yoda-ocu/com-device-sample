@@ -187,15 +187,21 @@ class ComDevice(PyLog.LogClass):
                 time.sleep(self.__interval)
         self.log_debug("Thread - End")
 
-    # Getter
-    def get_name(self): return self.__name
+    # Getter/Setter
+    def get_name(self) -> str:
+        return self.__name
+
+    def set_name(self, name):
+        self.log_warn('set name :  {} -> {}'.format(self.__name, name))
+        self.__name = name
 
     # deviceの状態
+
     def _fetch_state(self):
         if type(self) != ComDevice:
             raise NotImplementedError('_fetch_state')
-        self._lock.acquire()
         try:
+            self._lock.acquire()
             self.log_debug("<< fetch state")
             if self.__DEBUG_MODE:
                 self._cur_t, self._cur_val = time.perf_counter(), random.random()
@@ -265,7 +271,7 @@ class ComDevice(PyLog.LogClass):
         self._data = {'Time': [], 'Value': []}
 
     # deviceの状態が変わるまで待機
-    def wait_for_val(self, val: float, dir: float, timeout: float):
+    def wait_for_val(self, val: float, dir: float, timeout: float) -> (bool, str):
 
         if dir == 0:
             self.log_error('Unexpected dir : {}'.format(val))
@@ -278,13 +284,15 @@ class ComDevice(PyLog.LogClass):
         limit_time = time.perf_counter() + timeout
         while True:
             if dir > 0 and self._cur_val > val:
-                return
+                return True, None
             if dir < 0 and self._cur_val < val:
-                return
+                return True, None
             if timeout >= 0 and time.perf_counter() > limit_time:
                 break
+
             time.sleep(self.__interval)
         self.log_error("Time out Error wait for val : {}, dir : {}".format(val, dir))
+        return False, 'Time out'
 
     def TEST(self, *, test_time: float = 10):
         if test_time < 1.0 or 600.0 < test_time:
